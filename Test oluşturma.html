@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ca çıkar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .question {
+      margin: 10px 0;
+    }
+    .choices button {
+      margin: 5px;
+      padding: 10px;
+      cursor: pointer;
+    }
+    .selected {
+      background-color: #4CAF50;
+      color: white;
+    }
+    #output {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Deneme cevap anahtarı girme</h1>
+  <div id="setup">
+    <label for="name">Ad soyad: </label>
+    <input type="text" id="name" required><br><br>
+
+    <label for="pin">okul no(3 haneliyse başına 0 koy): </label>
+    <input type="number" id="pin" min="1000" max="9999" required><br><br>
+
+    <label for="examId">Sınav No: </label>
+    <input type="text" id="examId" required><br><br>
+
+    <label for="bookType">Kitapçık(A,B): </label>
+    <input type="text" id="bookType" required><br><br>
+
+    <button id="startExam">Cevaplaı gir</button>
+  </div>
+
+  <div id="questions" style="display:none;">
+    <div id="questionContainer"></div>
+    <button id="submitAnswers">Kaydet</button>
+  </div>
+
+  <div id="output"></div>
+
+  <script>
+    const presetQuestions = 120; // Change this number as needed
+    const answers = Array(presetQuestions).fill(null);
+
+    document.getElementById('startExam').addEventListener('click', () => {
+      const name = document.getElementById('name').value;
+      const pin = document.getElementById('pin').value;
+      const examId = document.getElementById('examId').value;
+      const bookType = document.getElementById('bookType').value;
+
+      if (!name || !pin || !examId || !bookType) {
+        alert('Please fill in all the details.');
+        return;
+      }
+
+      document.getElementById('setup').style.display = 'none';
+      document.getElementById('questions').style.display = 'block';
+      generateQuestions();
+    });
+
+    function generateQuestions() {
+      const container = document.getElementById('questionContainer');
+      for (let i = 1; i <= presetQuestions; i++) {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'question';
+        questionDiv.innerHTML = `<strong>Soru ${i}:</strong>`;
+
+        const choicesDiv = document.createElement('div');
+        choicesDiv.className = 'choices';
+        ['A', 'B', 'C', 'D', 'E', 'Boş'].forEach(choice => {
+          const button = document.createElement('button');
+          button.textContent = choice;
+          button.addEventListener('click', () => selectAnswer(i - 1, choice, button, choicesDiv));
+          choicesDiv.appendChild(button);
+        });
+
+        questionDiv.appendChild(choicesDiv);
+        container.appendChild(questionDiv);
+      }
+    }
+
+    function selectAnswer(index, choice, button, parentDiv) {
+      answers[index] = choice;
+      Array.from(parentDiv.children).forEach(btn => btn.classList.remove('selected'));
+      button.classList.add('selected');
+    }
+
+    document.getElementById('submitAnswers').addEventListener('click', () => {
+      const name = document.getElementById('name').value;
+      const pin = document.getElementById('pin').value;
+      const examId = document.getElementById('examId').value;
+      const bookType = document.getElementById('bookType').value;
+
+      const output = document.getElementById('output');
+      const data = {
+        bookType: bookType,
+        answers: answers
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const fileName = `${name}_${pin}_${examId}.json`;
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.textContent = 'İndir';
+      output.innerHTML = '';
+      output.appendChild(link);
+    });
+  </script>
+</body>
+</html>
